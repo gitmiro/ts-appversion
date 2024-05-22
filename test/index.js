@@ -123,6 +123,55 @@ describe('appversion', function() {
         });
     });
 
+    it('should succeed with custom match argument', function(done) {
+        repo.init();
+        repo.tagLightweight("1.1.1");
+        fs.mkdirSync(path.join(repoDir, 'src'));
+        fs.writeFileSync(path.join(repoDir, 'package.json'), '{"version": "1.0.0", "name": "test", "description": "test description"}');
+        exec('node dist/index.js --match=[0-9]* --root=' + repoDir, (err, stdout, stderr) => {
+            if (err) {
+                done('Test failed: Could not execute command.');
+                return;
+            }
+            if (stderr) {
+                done(stderr);
+                return;
+            }
+            console.log(stdout)
+
+
+            expect(stdout).to.match(/Writing version module to/);
+            const outputFile = path.join(repoDir, 'src', '_versions.ts');
+            if (!fs.existsSync(outputFile)) {
+                done('File ' + outputFile + ' not found.');
+                return;
+            }
+            const fileContents = fs.readFileSync(outputFile, 'utf8');
+            // interface well format test
+            expect(fileContents).to.contains('export interface TsAppVersion {');        // interface start
+            expect(fileContents).to.contains('version: string;');
+            expect(fileContents).to.contains('name: string;');
+            expect(fileContents).to.contains('description?: string;');
+            expect(fileContents).to.contains('versionLong?: string;');
+            expect(fileContents).to.contains('versionDate: string;');
+            expect(fileContents).to.contains('gitCommitHash?: string;');
+            expect(fileContents).to.contains('gitCommitDate?: string;');
+            expect(fileContents).to.contains('gitTag?: string;');
+            expect(fileContents).to.contains('};\nexport const versions: TsAppVersion = {');        // interface end + obj start
+
+            // data test
+            expect(fileContents).to.contains('version: \'1.0.0\',');
+            expect(fileContents).to.contains('name: \'test\',');
+            expect(fileContents).to.contains('gitTag: \'1.1.1\',');
+            expect(fileContents).to.contains('description: \'test description\',');
+            expect(fileContents).to.contains('versionLong: \'1.0.0-');
+            expect(fileContents).to.contains('};\nexport default versions;\n');              // export default obj + file close
+            expect(fileContents).to.not.contains('versionLong: \'1.0.0-\'');
+
+            done();
+        });
+    });
+
     it('should succeed with default settings when no description is provided', function(done) {
         repo.init();
         fs.mkdirSync(path.join(repoDir, 'src'));

@@ -37,12 +37,13 @@ With that setup the file is updated when `npm start` and `npm build` are run.
 
 ## Command arguments
 
-| Argument  |  Meaning | Default |
-|---|---|---|
-| --root  | root directory where your package.json is located |  .  |
-| --file  | relative location of the output file (based on the root directory) |  ./src/_versions.ts  |  false  |
-| --git  | relative location of the folder containing the .git folder (based on the root directory) |  .  |
-| --set-version | Set this to override the value of the version string fetched from package.json (set in `version` property) |  |
+| Argument      | Meaning                                                                                                    | Default            |
+|---------------|------------------------------------------------------------------------------------------------------------|--------------------|
+| --root        | root directory where your package.json is located                                                          | .                  |
+| --file        | relative location of the output file (based on the root directory)                                         | ./src/_versions.ts |  false  |
+| --git         | relative location of the folder containing the .git folder (based on the root directory)                   | .                  |
+| --set-version | Set this to override the value of the version string fetched from package.json (set in `version` property) |                    |
+| --match       | Set this to override the git-describe default tag-matcher                                                  | v[0-9]*            |
 
 ## Receiving the versions
 

@@ -102,9 +102,15 @@ if (fs.existsSync(path.join(gitFolder, '.git'))) {
 }
 
 if (enableGit) {
+
+    let match = 'v[0-9]*';
+    if (argv.hasOwnProperty('match')) {
+        match = argv['match']
+        console.log('[TsAppVersion] Using ' + match + ' as a git-describe tag-matcher.');
+    }
     const git = require('git-describe');
     try {
-        const info = git.gitDescribeSync(gitFolder, { longSemver: true });
+        const info = git.gitDescribeSync(gitFolder, { longSemver: true, match });
         let versionWithHash = appVersion;
         if (info.hasOwnProperty('hash')) {
             versionWithHash = versionWithHash + '-' + info.hash;
