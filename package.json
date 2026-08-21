@@ -19,7 +19,7 @@
     "url": "git+https://github.com/gitmiro/ts-appversion.git"
   },
   "license": "MIT",
-  "author": "Mirolub Zlatković",
+  "author": "Mirolub Zlatkovic",
   "contributors": [
     "Mario Lubenka (original author of saitho/ts-appversion)"
   ],
@@ -38,7 +38,8 @@
   },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "test:coverage": "node --test --experimental-test-coverage test/*.test.js"
+    "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
+    "preversion": "npm test"
   },
   "dependencies": {
     "picocolors": "^1.1.1"
