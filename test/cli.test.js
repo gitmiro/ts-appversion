@@ -229,4 +229,20 @@ describe('ts-appversion', () => {
         const contents = readGeneratedFile(project.outputFile);
         assertHasField(contents, 'name', 'consumer-app');
     });
+
+    it('handles a tag containing dashes', async () => {
+        repo.init();
+        // Pins the describe parser: the tag name itself contains the '-<n>-g<hash>'
+        // separator, so a non-greedy match would truncate it.
+        repo.tagLightweight('v2.0.0-rc1');
+        fs.mkdirSync(path.join(repoDir, 'src'), { recursive: true });
+        writePackageJson(repoDir, ', "description": "test description"');
+
+        await run(['--root=' + repoDir]);
+
+        const contents = readGeneratedFile(path.join(repoDir, 'src', '_versions.ts'));
+        assertHasField(contents, 'gitTag', 'v2.0.0-rc1');
+        assert.match(contents, /gitCommitHash: 'g\w+',/);
+        assert.match(contents, /gitCommitDate: '[^']+',/);
+    });
 });

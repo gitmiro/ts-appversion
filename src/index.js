@@ -27,6 +27,30 @@ function hasArg(name) {
 }
 
 /**
+ * Describe the checkout the way `git-describe` used to, without the dependency.
+ *
+ * `--tags` is required: git describe considers only annotated tags by default, so
+ * lightweight tags would be invisible.
+ * `--always` reproduces the bare-hash fallback when no tag matches. The hash keeps
+ * git's `g` prefix, which is present only when a tag matched
+ *
+ * @returns {{hash: string, tag: string|null}}
+ */
+function gitDescribe(cwd, match) {
+    const output = execFileSync(
+        'git',
+        ['describe', '--long', '--always', '--tags', '--match', match],
+        { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+    ).trim();
+
+    // <tag>-<commits since tag>-g<hash>; the tag itself may contain dashes.
+    const described = output.match(/^(.*)-(\d+)-(g[0-9a-f]+)$/);
+    return described
+        ? { hash: described[3], tag: described[1] }
+        : { hash: output, tag: null };
+}
+
+/**
  * When this package is installed as a dependency, our own location always looks like
  * <project>/node_modules/.../<package>/dist -- regardless of the package name, the scope,
  * or whether npm, yarn or pnpm laid it out. The consuming project is therefore the
@@ -136,11 +160,10 @@ if (enableGit) {
         match = argv['match']
         console.log('[TsAppVersion] Using ' + match + ' as a git-describe tag-matcher.');
     }
-    const git = require('git-describe');
     try {
-        const info = git.gitDescribeSync(gitFolder, { longSemver: true, match });
+        const info = gitDescribe(gitFolder, match);
         let versionWithHash = appVersion;
-        if (info.hasOwnProperty('hash')) {
+        if (info.hash) {
             versionWithHash = versionWithHash + '-' + info.hash;
             src += `    gitCommitHash: '${info.hash}',\n`;
             console.log('[TsAppVersion] ' + pc.green('Git Commit hash: ') + pc.yellow(info.hash));
@@ -169,16 +192,18 @@ if (enableGit) {
         }
         console.log('[TsAppVersion] ' + pc.green('Long Git version: ') + pc.yellow(versionWithHash));
         src += `    versionLong: '${versionWithHash}',\n`;
-        if (info.hasOwnProperty('tag') && info.tag !== null) {
+        if (info.tag !== null) {
             console.log('[TsAppVersion] ' + pc.green('Git tag: ') + pc.yellow(info.tag));
             src += `    gitTag: '${info.tag}',\n`;
         }
-    } catch(e) {
-        if (new RegExp(/Not a git repository/).test(e.message)) {
+    } catch (e) {
+        // execFileSync surfaces git's own stderr, which is where the reason lives.
+        const reason = ((e.stderr || '') + e.message).trim();
+        if (/not a git repository/i.test(reason)) {
             console.log('[TsAppVersion] ' + pc.red('Not a Git repository.'));
             return;
         }
-        console.log('[TsAppVersion] ' + pc.red(e.message));
+        console.log('[TsAppVersion] ' + pc.red(reason));
     }
 }
 
