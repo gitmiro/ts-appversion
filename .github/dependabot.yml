@@ -1,0 +1,27 @@
+version: 2
+
+updates:
+  # Runtime dependencies only — this package has no devDependencies.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore
+    groups:
+      # One PR per month for minor/patch bumps instead of one per package.
+      # Majors are deliberately left ungrouped so they get reviewed individually.
+      npm-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  # actions/checkout and actions/setup-node, used by test.yml and release.yml.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ['*']
