@@ -1,32 +1,41 @@
 # Contributing
 
-Feel free to submit any new features via Pull Request.
-Make sure the supplied tests still work and to add own test cases to cover your code.
+Pull requests are welcome. Please keep the existing tests passing and add coverage for anything new.
 
-## PNPM
+## Setup
 
-This repository uses pnpm instead of npm for installing NPM packages.
-Install it using `npm i -g pnpm` if you haven't already. All commands from npm are available with pnpm.
-
-Install dependencies with `pnpm install`.
-
-## Commit message hook
-
-This project uses commizen for consistent commit message formatting.
-
-Please setup a Git hook in `.git/hooks/prepare-commit-msg` with the following contents:
-
-```shell script
-#!/bin/bash
-exec < /dev/tty && node_modules/.bin/git-cz --hook || true
+```shell
+npm ci
+npm test
 ```
 
-After that, make it executable: `chmod +x .git/hooks/prepare-commit-msg`
+Requires Node.js 20 or newer and a `git` binary on your PATH — the tests drive a real git
+repository in your tmp directory.
 
-## Running tests
+Run a single test by name:
 
-Run tests by this command:
-
-```shell script
-pnpm run test
+```shell
+node --test --test-name-pattern="custom --match" test/*.test.js
 ```
+
+Coverage:
+
+```shell
+npm run test:coverage
+```
+
+## A note on the layout
+
+`src/` is hand-written JavaScript, not build output. There is no build step.
+
+## Releasing
+
+Releases are tagged, not automated from commit messages. Bump the version in `package.json`,
+commit, then:
+
+```shell
+git tag v1.2.3
+git push origin v1.2.3
+```
+
+The release workflow verifies the tag matches `package.json`, runs the tests, and publishes to npm.

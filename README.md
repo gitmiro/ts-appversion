@@ -1,49 +1,60 @@
-# TS-AppVersion
+# ts-appversion
 
-[![Build Status](https://travis-ci.com/saitho/ng-appversion.svg?branch=master)](https://travis-ci.com/saitho/ng-appversion)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ts-appversion&metric=alert_status)](https://sonarcloud.io/dashboard?id=ts-appversion)
-[![npm version](https://img.shields.io/npm/v/@saithodev/ts-appversion.svg)](https://www.npmjs.com/package/@saithodev/ts-appversion)
-[![npm license](https://img.shields.io/npm/l/@saithodev/ts-appversion.svg)](https://www.npmjs.com/package/@saithodev/ts-appversion)
-[![Known Vulnerabilities](https://snyk.io/test/github/saitho/ng-appversion/badge.svg?targetFile=package.json)](https://snyk.io/test/github/saitho/ng-appversion?targetFile=package.json)
-[![Dependency Status](https://david-dm.org/saitho/ng-appversion/status.svg)](https://david-dm.org/saitho/ng-appversion)
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsaitho%2Fng-appversion.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsaitho%2Fng-appversion?ref=badge_shield)
+Extracts version information from your `package.json` and Git (if configured) and writes it to a
+TypeScript file your application can import, so you can display the running version in your app.
 
-This package extracts version information from your package.json and Git (if configured) and saves it into a TypeScript file.
-You can then access that TypeScript file from your application and display the version in your app.
+> **This is a maintained fork.** The original [saitho/ts-appversion](https://github.com/saitho/ts-appversion)
+> was archived by its author. This fork continues it as `@gitmiro/ts-appversion`, adding the `--match`
+> option and ongoing maintenance. It is MIT licensed like the original, and is neither affiliated with
+> nor endorsed by the original author. See [LICENSE](LICENSE) for the full copyright notice.
 
-**The examples below illustrate the usage of this package for the Angular framework.
-However it should work similarly for any other JavaScript framework that is using TypeScript.**
+> **Coming from `@saithodev/ts-appversion`?** This package restarts at `1.0.0`, which is a lower
+> number than the original's last release (`2.2.0`) but strictly newer code. It is a drop-in
+> replacement: same CLI, same generated file. Swap the dependency and the `ts-appversion` command
+> keeps working.
+
+Requires **Node.js 20 or newer**.
+
+## Installation
+
+```shell
+npm install --save-dev @gitmiro/ts-appversion
+```
+
+The examples below use Angular, but the package works with any TypeScript project.
 
 ## Getting started
 
-The package comes with a script that has to be run before your application is built.
-You might want to use *prestart* and *prebuild* inside your package.json for that:
+The package ships a command that runs before your application is built. Wire it into *prestart*
+and *prebuild* in your package.json:
 
-```
+```json
 {
-  scripts: [
+  "scripts": {
     "prestart": "ts-appversion",
     "start": "ng serve",
     "prebuild": "ts-appversion",
-    "build": "ng build",
-  ]
+    "build": "ng build"
+  }
 }
 ```
 
-With that setup the file is updated when `npm start` and `npm build` are run.
-*Note:* You won't be able to run `ng build` anymore as the script will not be executed. Use `npm build` instead.
+The version file is then regenerated whenever `npm start` or `npm run build` runs.
+
+*Note:* calling `ng build` directly bypasses the pre-hook, so the version file will be stale.
+Use `npm run build` instead.
 
 ## Command arguments
 
-| Argument      | Meaning                                                                                                    | Default            |
-|---------------|------------------------------------------------------------------------------------------------------------|--------------------|
-| --root        | root directory where your package.json is located                                                          | .                  |
-| --file        | relative location of the output file (based on the root directory)                                         | ./src/_versions.ts |  false  |
-| --git         | relative location of the folder containing the .git folder (based on the root directory)                   | .                  |
-| --set-version | Set this to override the value of the version string fetched from package.json (set in `version` property) |                    |
-| --match       | Set this to override the git-describe default tag-matcher                                                  | v[0-9]*            |
+| Argument | Meaning | Default |
+|---|---|---|
+| `--root` | Root directory holding your package.json | the project that installed this package |
+| `--file` | Output file location, relative to the root directory | `./src/_versions.ts` |
+| `--git` | Location of the folder containing `.git`, relative to the root directory | `.` |
+| `--set-version` | Override the version string taken from package.json | package.json `version` |
+| `--match` | Override the tag pattern git-describe matches against | `v[0-9]*` |
+
+Both `--flag value` and `--flag=value` work. Unknown flags are ignored rather than failing your build.
 
 ## Receiving the versions
 
@@ -71,11 +82,11 @@ export class AppComponent {
 
 The file will export an object with following variables:
 
-* **version** is the version from packages.json (or value of `set-version` option if set)
-* **name** is the name from the packages.json (e.g. 'sample-app')
-* **description** is the description from the packages.json
+* **version** is the version from package.json (or value of `set-version` option if set)
+* **name** is the name from the package.json (e.g. 'sample-app')
+* **description** is the description from the package.json
 * **versionDate** is the timestamp in ISO format when the compilation/package started.
-* **versionLong** is the version from the packages.json PLUS the Hash of the current Git-Commit (e.g. v1.0.0-g63962e3) - will only be generated if your repository is a Git Repository
+* **versionLong** is the version from the package.json PLUS the Hash of the current Git-Commit (e.g. v1.0.0-g63962e3) - will only be generated if your repository is a Git Repository
 * **gitTag** is the latest Git tag
 * **gitCommitHash** is the short hash of the last commit
 * **gitCommitDate** is the timestamp in ISO format of the last commit
@@ -133,8 +144,8 @@ export class AppComponent {
 }
 ```
 
-Check out [the example/ directory](example/) for a working example Angular application.
-
 
 ## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsaitho%2Fng-appversion.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsaitho%2Fng-appversion?ref=badge_large)
+
+MIT — see [LICENSE](LICENSE). Original work © 2017-2023 Mario Lubenka, fork © 2024-2026 Miroljub Zlatković.
+
