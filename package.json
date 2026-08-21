@@ -1,6 +1,6 @@
 {
   "name": "@gitmiro/ts-appversion",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Reads version information from your package.json and Git and writes it to a TypeScript file you can import in your application.",
   "keywords": [
     "angular",
